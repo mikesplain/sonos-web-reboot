@@ -1,0 +1,54 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Sonos Web",
+        "description": "Sign in at play.sonos.com. In your browser's Network panel, copy the Cookie request header from GET /api/control/households. Paste it here to find your speakers.",
+        "data": {"session_cookie": "Sonos Web session cookie"}
+      },
+      "household": {
+        "title": "Choose a Sonos system",
+        "data": {"household_id": "Sonos system"}
+      },
+      "players": {
+        "title": "Choose speakers to restart",
+        "description": "Home Assistant will create a restart button for each speaker you select. Setup only reads the list of speakers.",
+        "data": {"players": "Speakers"}
+      },
+      "reauth_confirm": {
+        "title": "Reconnect to Sonos Web",
+        "description": "Sign in again at play.sonos.com with the account that owns this Sonos system, then paste a fresh Cookie request header.",
+        "data": {"session_cookie": "New Sonos Web session cookie"}
+      },
+      "reconfigure": {
+        "title": "Change speakers",
+        "description": "Select which speakers should have a restart button. Deselecting a speaker removes its button and can affect automations that target it.",
+        "data": {"players": "Speakers"}
+      }
+    },
+    "error": {
+      "invalid_cookie": "Paste a single Cookie request header from Sonos Web.",
+      "invalid_auth": "Sonos declined the session. Sign in at play.sonos.com and copy a fresh Cookie request header.",
+      "cannot_connect": "Home Assistant could not read the Sonos system. Check internet access and try again.",
+      "wrong_household": "This session does not have access to the configured Sonos system.",
+      "select_players": "Select at least one speaker from the list."
+    },
+    "abort": {
+      "already_configured": "This Sonos system is already configured.",
+      "invalid_auth": "Sonos declined the session. Sign in at play.sonos.com and try again.",
+      "cannot_connect": "Home Assistant could not read the speaker list. Check internet access and try again.",
+      "no_households": "The Sonos session has no available systems.",
+      "no_players": "Sonos Web did not list any eligible speakers in this system.",
+      "reauth_required": "Reconnect to Sonos Web before changing the speaker selection.",
+      "reauth_successful": "Reconnected to Sonos Web.",
+      "reconfigure_successful": "Updated the selected speakers."
+    }
+  },
+  "exceptions": {
+    "session_expired": {"message": "The Sonos Web session expired. Reconnect the integration in Settings."},
+    "permission_denied": {"message": "Sonos denied permission to restart this speaker. Check that the session belongs to the system owner."},
+    "restart_pending": {"message": "A restart was recently requested for this speaker. Give the speaker two minutes to reconnect."},
+    "restart_rejected": {"message": "Sonos rejected the restart request. Check that this speaker is connected to Sonos Web."},
+    "restart_unconfirmed": {"message": "The restart outcome is unknown. Check the speaker before trying again. Home Assistant did not retry the request."}
+  }
+}

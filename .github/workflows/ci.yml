@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements-test.txt
+      - name: Lint
+        run: ruff check custom_components tests
+      - name: Test
+        run: python -m pytest
+      - name: Verify manifest JSON
+        run: python -m json.tool custom_components/sonos_web_reboot/manifest.json > /dev/null
+      - name: Build release zip (dry run)
+        run: |
+          set -eu
+          rm -rf dist staging
+          mkdir -p dist staging
+          cp -R custom_components/sonos_web_reboot/. staging/
+          python - <<'PY'
+          import json
+          import os
+          import zipfile
+
+          os.makedirs("dist", exist_ok=True)
+          with zipfile.ZipFile("dist/sonos_web_reboot.zip", "w", zipfile.ZIP_DEFLATED) as zf:
+              for root, dirs, files in os.walk("staging"):
+                  for name in sorted(files):
+                      full = os.path.join(root, name)
+                      zf.write(full, os.path.relpath(full, "staging"))
+          with zipfile.ZipFile("dist/sonos_web_reboot.zip") as zf:
+              names = zf.namelist()
+          assert "manifest.json" in names, f"manifest.json must sit at the zip root: {names}"
+          PY

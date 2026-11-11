@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release, e.g. 0.1.1 (must match manifest.json; creates tag vX.Y.Z)
+        required: true
+        type: string
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements-test.txt
+      - name: Resolve and verify version
+        id: version
+        env:
+          REQUESTED: ${{ inputs.version || (startsWith(github.ref, 'refs/tags/') && github.ref_name || '') }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+
+          requested = os.environ.get("REQUESTED", "").strip().lstrip("v")
+          manifest = json.load(open("custom_components/sonos_web_reboot/manifest.json"))
+          version = manifest["version"]
+          if requested and requested != version:
+              sys.exit(f"manifest.json version {version} does not match requested {requested}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"version={version}\n")
+          PY
+      - name: Lint
+        run: ruff check custom_components tests
+      - name: Test
+        run: python -m pytest
+      - name: Build release zip
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          rm -rf dist staging
+          mkdir -p dist staging
+          cp -R custom_components/sonos_web_reboot/. staging/
+          python - <<'PY'
+          import os
+          import zipfile
+
+          os.makedirs("dist", exist_ok=True)
+          with zipfile.ZipFile("dist/sonos_web_reboot.zip", "w", zipfile.ZIP_DEFLATED) as zf:
+              for root, dirs, files in os.walk("staging"):
+                  for name in sorted(files):
+                      full = os.path.join(root, name)
+                      zf.write(full, os.path.relpath(full, "staging"))
+          with zipfile.ZipFile("dist/sonos_web_reboot.zip") as zf:
+              names = zf.namelist()
+          assert "manifest.json" in names, f"manifest.json must sit at the zip root: {names}"
+          print("zip contents:", ", ".join(sorted(names)))
+          PY
+      - name: Create release and attach asset
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          TAG="v${VERSION}"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Sonos Web Reboot $TAG" \
+              --generate-notes
+          fi
+          gh release upload "$TAG" dist/sonos_web_reboot.zip \
+            --repo "$GITHUB_REPOSITORY" --clobber
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY"
