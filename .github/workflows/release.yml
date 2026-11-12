@@ -64,7 +64,10 @@ jobs:
           os.makedirs("dist", exist_ok=True)
           with zipfile.ZipFile("dist/sonos_web_reboot.zip", "w", zipfile.ZIP_DEFLATED) as zf:
               for root, dirs, files in os.walk("staging"):
+                  dirs[:] = [d for d in dirs if d != "__pycache__"]
                   for name in sorted(files):
+                      if name.endswith(".pyc"):
+                          continue
                       full = os.path.join(root, name)
                       zf.write(full, os.path.relpath(full, "staging"))
           with zipfile.ZipFile("dist/sonos_web_reboot.zip") as zf:
