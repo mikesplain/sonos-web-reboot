@@ -1,10 +1,10 @@
 # Sonos Web Reboot for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
 Adds a **Restart** button for each Sonos speaker you select. Press it on the device page or call **Button: Press** from an automation. The restart request travels through the Sonos Web cloud service using your existing Sonos Web session.
 
-Tested with Home Assistant Core 2026.10 and 2026.11.
+Tested with Home Assistant Core 2026.10.0 and 2026.10.4, the two versions the CI matrix runs. Home Assistant Core 2026.11 is not covered yet: each `pytest-homeassistant-custom-component` release pins one Home Assistant version, and the newest one pins 2026.10.4.
 
 - This is an unofficial community integration. It is not affiliated with, endorsed, or supported by Sonos.
 - It uses a private Sonos Web endpoint that can change at any time without notice.
