@@ -2,5 +2,6 @@
   "name": "Sonos Web Reboot",
   "zip_release": true,
   "filename": "sonos_web_reboot.zip",
-  "render_readme": true
+  "render_readme": true,
+  "homeassistant": "2026.10.0"
 }
