@@ -3,8 +3,10 @@
   "name": "Sonos Web Reboot",
   "codeowners": ["mikesplain"],
   "config_flow": true,
+  "documentation": "https://github.com/mikesplain/sonos-web-reboot",
   "integration_type": "hub",
-  "iot_class": "cloud_push",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/mikesplain/sonos-web-reboot/issues",
   "requirements": [],
   "version": "0.1.0"
 }
